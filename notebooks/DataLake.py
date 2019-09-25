@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md 
 # MAGIC 
-# MAGIC #### How to read (and write) data from Datalake using Databricks
+# MAGIC #### How to read data from Datalake using Databricks
 # MAGIC 
 # MAGIC Reference Links:
 # MAGIC   1. Azure Data Lake Gen1: https://docs.databricks.com/spark/latest/data-sources/azure/azure-datalake.html
@@ -79,7 +79,33 @@ client_id = dbutils.widgets.get("client_id")
 client_secret = dbutils.widgets.get("client_secret")
 directory_id = dbutils.widgets.get("directory_id")
 
-spark.conf.set("fs.adl.oauth2.access.token.provider.type", "ClientCredential")
-spark.conf.set("fs.adl.oauth2.client.id", client_id)
-spark.conf.set("fs.adl.oauth2.credential", client_secret)
-spark.conf.set("fs.adl.oauth2.refresh.url", "https://login.microsoftonline.com/" + directory_id + "/oauth2/token")
+spark.conf.set("dfs.adls.oauth2.access.token.provider.type", "ClientCredential")
+spark.conf.set("dfs.adls.oauth2.client.id", client_id)
+spark.conf.set("dfs.adls.oauth2.credential", client_secret)
+spark.conf.set("dfs.adls.oauth2.refresh.url", "https://login.microsoftonline.com/" + directory_id + "/oauth2/token")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ###### Check if you can successfully access your ADLS Gen1
+# MAGIC 
+# MAGIC Replace the value of **DATALAKE_GEN1_NAME** with your own Data Lake Gen1
+
+# COMMAND ----------
+
+# MAGIC %fs ls adl://DATALAKE_GEN1_NAME.azuredatalakestore.net/
+
+# COMMAND ----------
+
+# MAGIC %r 
+# MAGIC 
+# MAGIC library(SparkR)
+# MAGIC 
+# MAGIC df <- read.text("adl://DATALAKE_GEN1_NAME.azuredatalakestore.net/PATH_TO_TEXT_FILE")
+# MAGIC 
+# MAGIC ## Another Example on how to read a file from Data Lake with CSV  
+# MAGIC 
+# MAGIC #df <- read.df("adl://DATALAKE_GEN1_NAME.azuredatalakestore.net/PATH_TO_CSV", source = "csv", header="true", inferSchema = "true")
+# MAGIC 
+# MAGIC display(df)

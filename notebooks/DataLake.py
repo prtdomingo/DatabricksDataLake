@@ -109,3 +109,49 @@ spark.conf.set("dfs.adls.oauth2.refresh.url", "https://login.microsoftonline.com
 # MAGIC #df <- read.df("adl://DATALAKE_GEN1_NAME.azuredatalakestore.net/PATH_TO_CSV", source = "csv", header="true", inferSchema = "true")
 # MAGIC 
 # MAGIC display(df)
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC 
+# MAGIC #### Access Data Lake Gen2 Data from Databricks - Grant Access Control on the Active Directory Application to Azure Data Lake Gen2
+# MAGIC 
+# MAGIC 1. Navigate to the Azure Storage (with ADLS Gen2 configured)
+# MAGIC 2. Go to **Access Control (IAM)**
+# MAGIC 3. Click **+ Add** and **Add role assignments**
+# MAGIC 4. From the form, include the following details:
+# MAGIC     - Role: Storage Blob Data Contributor
+# MAGIC     - Assign acess to: leave it default
+# MAGIC     - Select: type the **Active Directory Application** we've created on the previous step
+# MAGIC     
+# MAGIC     ![alt text](https://github.com/prtdomingo/DatabricksDatalake/raw/master/docs-assets/step3-1.png "")
+# MAGIC     
+# MAGIC 5. Press **Save**
+# MAGIC 6. From the Storage Account, navigate to **Access keys** under **Settings** section, and take note of the **key**
+
+# COMMAND ----------
+
+# cell #6 is also required prior to this code
+
+dbutils.widgets.text("storage_account_key", "", "Storage Account Key")
+dbutils.widgets.text("storage_account_name", "", "Storage Account Name")
+
+# COMMAND ----------
+
+storage_account_key = dbutils.widgets.get("storage_account_key")
+storage_account_name = dbutils.widgets.get("storage_account_name")
+
+spark.conf.set("fs.azure.account.key." + storage_account_name + ".dfs.core.windows.net", storage_account_key)
+spark.conf.set("fs.azure.createRemoteFileSystemDuringInitialization", "true")
+dbutils.fs.ls("abfss://REPLACE_WITH_YOUR_CONTAINER_NAME@" + storage_account_name + ".dfs.core.windows.net/")
+spark.conf.set("fs.azure.createRemoteFileSystemDuringInitialization", "false")
+
+# COMMAND ----------
+
+# MAGIC %r 
+# MAGIC 
+# MAGIC library(SparkR)
+# MAGIC 
+# MAGIC df_adl2 <- read.text("abfss://REPLACE_WITH_YOUR_CONTAINER_NAME@" + storage_account_name + ".dfs.core.windows.net/test")
+# MAGIC 
+# MAGIC display(df_adl2)
